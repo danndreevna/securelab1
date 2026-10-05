@@ -21,12 +21,10 @@ public static class IncidentEndpoints
             .Produces<IncidentDetailsResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound);
 
-        group.MapGet("/severity-summary", () => Results.Problem(
-                title: "Точку розширення ще не реалізовано",
-                detail: "Завершіть цей endpoint під час лабораторної роботи № 1.",
-                statusCode: StatusCodes.Status501NotImplemented))
+        group.MapGet("/severity-summary", GetSeveritySummaryAsync)
             .WithName("GetIncidentSeveritySummary")
-            .ProducesProblem(StatusCodes.Status501NotImplemented);
+            .Produces<IReadOnlyList<IncidentSeveritySummaryResponse>>(StatusCodes.Status200OK)
+            .ProducesValidationProblem(StatusCodes.Status400BadRequest);
 
         return endpoints;
     }
@@ -66,5 +64,40 @@ public static class IncidentEndpoints
                 detail: $"Інцидент '{id}' не існує.",
                 statusCode: StatusCodes.Status404NotFound)
             : Results.Ok(incident);
+    }
+
+    private static async Task<IResult> GetSeveritySummaryAsync(
+        string? status,
+        IncidentQueries queries,
+        HttpContext httpContext,
+        CancellationToken cancellationToken)
+    {
+        var allowedStatuses = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "New",
+            "Triaged",
+            "Resolved"
+        };
+
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            if (!allowedStatuses.Contains(status))
+            {
+                return Results.ValidationProblem(
+                    new Dictionary<string, string[]>
+                    {
+                        ["status"] = [$"Unknown status filter '{status}'. Supported values: New, Triaged, Resolved."]
+                    },
+                    title: "One or more validation errors occurred.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+        }
+
+        var summary = await queries.GetSeveritySummaryAsync(
+            status,
+            httpContext.TraceIdentifier,
+            cancellationToken);
+
+        return Results.Ok(summary);
     }
 }
