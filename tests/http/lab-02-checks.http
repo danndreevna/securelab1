@@ -1,0 +1,186 @@
+@api = http://localhost:5080
+
+# Перед прогоном: reset бази (dotnet run --project src/SecureLab.Api -- --reset-database),
+# інакше повторні запити з тим самим title дадуть 409.
+
+### T-01 коректне створення (очікується 201)
+POST {{api}}/api/incidents
+Content-Type: application/json
+
+{
+  "title": "  Valid incident one  ",
+  "description": "Коректний опис тестового інциденту.",
+  "severity": "medium",
+  "occurredAtUtc": "2026-09-27T12:00:00Z"
+}
+
+### T-02a severity = 7 (400, ключ severity)
+POST {{api}}/api/incidents
+Content-Type: application/json
+
+{
+  "title": "Bad severity",
+  "description": "Опис для перевірки невалідного severity.",
+  "severity": "7",
+  "occurredAtUtc": "2026-09-27T12:00:00Z"
+}
+
+### T-02b title з пробілів (400, ключ title)
+POST {{api}}/api/incidents
+Content-Type: application/json
+
+{
+  "title": "   ",
+  "description": "Опис для перевірки порожнього title.",
+  "severity": "Low",
+  "occurredAtUtc": "2026-09-27T12:00:00Z"
+}
+
+### T-02c title 161 символ (400, ключ title)
+POST {{api}}/api/incidents
+Content-Type: application/json
+
+{
+  "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "description": "Опис для перевірки довгого title.",
+  "severity": "Low",
+  "occurredAtUtc": "2026-09-27T12:00:00Z"
+}
+
+### T-02d title 160 символів (201, межа проходить)
+POST {{api}}/api/incidents
+Content-Type: application/json
+
+{
+  "title": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+  "description": "Опис для перевірки межі title 160.",
+  "severity": "Low",
+  "occurredAtUtc": "2026-09-27T12:00:00Z"
+}
+
+### T-02e порожній description (400, ключ description)
+POST {{api}}/api/incidents
+Content-Type: application/json
+
+{
+  "title": "Empty description",
+  "description": "   ",
+  "severity": "Low",
+  "occurredAtUtc": "2026-09-27T12:00:00Z"
+}
+
+### T-02f description 4001 символ (400, ключ description)
+POST {{api}}/api/incidents
+Content-Type: application/json
+
+{
+  "title": "Long description",
+  "description": "ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "severity": "Low",
+  "occurredAtUtc": "2026-09-27T12:00:00Z"
+}
+
+### T-02g description 4000 символів (201, межа проходить)
+POST {{api}}/api/incidents
+Content-Type: application/json
+
+{
+  "title": "Long description ok",
+  "description": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "severity": "Low",
+  "occurredAtUtc": "2026-09-27T12:00:00Z"
+}
+
+### T-02h відсутній occurredAtUtc (400, ключ occurredAtUtc)
+POST {{api}}/api/incidents
+Content-Type: application/json
+
+{
+  "title": "Missing timestamp",
+  "description": "Опис без обов'язкової часової мітки.",
+  "severity": "Low"
+}
+
+### T-02i дата в майбутньому (400, ключ occurredAtUtc)
+POST {{api}}/api/incidents
+Content-Type: application/json
+
+{
+  "title": "Future timestamp",
+  "description": "Опис для перевірки дати в майбутньому.",
+  "severity": "Low",
+  "occurredAtUtc": "2099-01-01T00:00:00Z"
+}
+
+### Зміщення +03:00 (201, occurredAtUtc = 10:00:00+00:00)
+POST {{api}}/api/incidents
+Content-Type: application/json
+
+{
+  "title": "Offset normalization",
+  "description": "Перевірка нормалізації зміщення часового поясу.",
+  "severity": "Low",
+  "occurredAtUtc": "2026-09-01T13:00:00+03:00"
+}
+
+### T-09a High, description 39 символів (400, ключ description)
+POST {{api}}/api/incidents
+Content-Type: application/json
+
+{
+  "title": "Cross field 39",
+  "description": "012345678901234567890123456789012345678",
+  "severity": "High",
+  "occurredAtUtc": "2026-09-27T12:00:00Z"
+}
+
+### T-09b High, description 40 символів (201)
+POST {{api}}/api/incidents
+Content-Type: application/json
+
+{
+  "title": "Cross field 40",
+  "description": "0123456789012345678901234567890123456789",
+  "severity": "High",
+  "occurredAtUtc": "2026-09-27T12:00:00Z"
+}
+
+### T-03 повтор title з T-09b у тому самому регістрі (409)
+POST {{api}}/api/incidents
+Content-Type: application/json
+
+{
+  "title": "Cross field 40",
+  "description": "Спроба повторного створення з тим самим title.",
+  "severity": "Medium",
+  "occurredAtUtc": "2026-09-27T12:00:00Z"
+}
+
+### T-03b інший регістр title (201: Alert і alert різні)
+POST {{api}}/api/incidents
+Content-Type: application/json
+
+{
+  "title": "cross field 40",
+  "description": "Той самий title в іншому регістрі.",
+  "severity": "Medium",
+  "occurredAtUtc": "2026-09-27T12:00:00Z"
+}
+
+### Overposting: id, status, ownerUserId ігноруються (201, status New)
+POST {{api}}/api/incidents
+Content-Type: application/json
+
+{
+  "title": "Overposting probe",
+  "description": "Спроба передати системні поля у тілі запиту.",
+  "severity": "Low",
+  "occurredAtUtc": "2026-09-27T12:00:00Z",
+  "id": "00000000-0000-0000-0000-000000000001",
+  "status": "Closed",
+  "ownerUserId": "20000000-0000-0000-0000-000000000002"
+}
+
+### T-06 ресурс не знайдено (404, application/problem+json)
+GET {{api}}/api/incidents/99999999-9999-9999-9999-999999999999
+
