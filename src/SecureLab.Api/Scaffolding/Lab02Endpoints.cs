@@ -11,16 +11,36 @@ public static class Lab02Endpoints
     {
         app.MapGet("/api/incidents/search", async (string? q, string? sortBy, SecureLabDbContext db, CancellationToken ct) =>
         {
-            var order = sortBy switch
+            // Allowlist для sortBy: будь-яке значення поза списком — 400, а не підстановка в ORDER BY.
+            string[] allowedSortBy = ["createdAtUtc", "severity", "status"];
+            if (!string.IsNullOrEmpty(sortBy) && !allowedSortBy.Contains(sortBy))
             {
-                null or "" or "createdAtUtc" => "created_at_utc DESC",
-                "severity" => "severity",
-                "status" => "status",
-                _ => sortBy
+                var sortErrors = new Dictionary<string, string[]>
+                {
+                    ["sortBy"] = ["Допустимі значення: createdAtUtc, severity, status."]
+                };
+                return Results.ValidationProblem(sortErrors, title: "Validation failed");
+            }
+
+            // Екранування q: спецсимволи LIKE/ILIKE (\, %, _) нейтралізуються до того,
+            // як значення потрапить у патерн, інакше клієнт керує структурою запиту.
+            var safeQ = q ?? "";
+            var escapedQ = safeQ.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
+            var pattern = $"%{escapedQ}%";
+
+            var query = db.Incidents.AsNoTracking().Where(i =>
+                EF.Functions.ILike(i.Title, pattern, "\\") ||
+                EF.Functions.ILike(i.Description, pattern, "\\"));
+
+            query = sortBy switch
+            {
+                "severity" => query.OrderBy(i => i.Severity).ThenBy(i => i.Id),
+                "status" => query.OrderBy(i => i.Status).ThenBy(i => i.Id),
+                _ => query.OrderByDescending(i => i.CreatedAtUtc).ThenBy(i => i.Id)
             };
-            var sql = "SELECT * FROM incidents WHERE title ILIKE '%" + (q ?? "")
-                + "%' OR description ILIKE '%" + (q ?? "") + "%' ORDER BY " + order + " LIMIT 50";
-            var rows = await db.Incidents.FromSqlRaw(sql).AsNoTracking().ToListAsync(ct);
+
+            var rows = await query.Take(50).ToListAsync(ct);
+
             return Results.Ok(rows.Select(row => new
             {
                 row.Id,
