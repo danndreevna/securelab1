@@ -1,7 +1,43 @@
 <!doctype html>
-<html lang="uk"><meta charset="utf-8"><title>ЛР 03 — сеанс</title>
-<h1>Навчальний сеанс</h1>
-<form id="login"><label>Ім’я <input name="userName" autocomplete="username" required></label>
-<label>Пароль <input name="password" type="password" autocomplete="current-password" required></label><button>Увійти</button></form>
-<button id="me">Мій профіль</button><button id="logout">Вийти</button><pre id="result"></pre>
+<html lang="en"><meta charset="utf-8"><title>Lab 03 - session</title>
+<h1>Training session</h1>
+
+<h2>Register</h2>
+<form id="register">
+  <label>Username <input name="userName" autocomplete="username" required></label>
+  <label>Email <input name="email" type="email" autocomplete="email" required></label>
+  <label>Display name <input name="displayName" required></label>
+  <label>Password <input name="password" type="password" autocomplete="new-password" required></label>
+  <button>Register</button>
+</form>
+<pre id="registerResult"></pre>
+
+<h2>Login</h2>
+<form id="login">
+  <label>Username <input name="userName" autocomplete="username" required></label>
+  <label>Password <input name="password" type="password" autocomplete="current-password" required></label>
+  <button>Login</button>
+</form>
+<button id="me">My profile</button>
+<button id="logout">Logout</button>
+<pre id="authResult"></pre>
+<pre id="profile">Not signed in</pre>
+
+<h2>New incident</h2>
+<form id="create">
+  <label>Title <input name="title" required maxlength="160"></label>
+  <label>Description <textarea name="description" required maxlength="4000"></textarea></label>
+  <label>Severity
+    <select name="severity" required>
+      <option value="Low">Low</option>
+      <option value="Medium">Medium</option>
+      <option value="High">High</option>
+      <option value="Critical">Critical</option>
+    </select>
+  </label>
+  <label>Occurred at <input name="occurredAtUtc" type="datetime-local" required></label>
+  <button>Create</button>
+</form>
+<pre id="createResult"></pre>
+
 <script src="auth-lab.js" defer></script></html>
