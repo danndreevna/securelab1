@@ -55,6 +55,13 @@ public static class Lab03Identity
                 return ValueTask.CompletedTask;
             };
         });
+
+        // Явно вмикаємо перевірку security stamp на кожен запит (не раз на 30 хв за замовчуванням),
+        // щоб відкликання сесії після серверної події діяло одразу, а не з затримкою.
+        builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+        {
+            options.ValidationInterval = TimeSpan.Zero;
+        });
     }
 
     public static void MapLab03Identity(this WebApplication app)
@@ -118,6 +125,16 @@ public static class Lab03Identity
             logger.LogInformation("Logout for user {UserName}", userName);
             return Results.NoContent();
         });
+        app.MapPost("/api/auth/sessions/revoke-all", async (HttpContext context, UserManager<ApplicationUser> users, ILogger<Program> logger) =>
+        {
+            var id = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = id is null ? null : await users.FindByIdAsync(id);
+            if (user is null) return Results.Unauthorized();
+
+            await users.UpdateSecurityStampAsync(user);
+            logger.LogInformation("All sessions revoked for user {UserName}", user.UserName);
+            return Results.NoContent();
+        }).RequireAuthorization();
         app.MapGet("/api/me", async (HttpContext context, UserManager<ApplicationUser> users) =>
         {
             var id = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
