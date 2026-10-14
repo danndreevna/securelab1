@@ -1,0 +1,9 @@
+Scenario: T-02i дата в майбутньому (400, ключ occurredAtUtc)
+Request:  POST http://localhost:5080/api/incidents
+Request body length: 156
+Status:   400
+Content-Type: application/problem+json
+Location: 
+Time (UTC): 2026-10-06T07:19:45.9059981Z
+
+{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"Validation failed","status":400,"errors":{"occurredAtUtc":["Час occurredAtUtc не може випереджати поточний час сервера більш ніж на 5 хвилин."]},"traceId":"00-607c71c8d84d7b6dd0bd2968d435973b-6c175b9aa4f3a66a-00"}

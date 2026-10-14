@@ -1,0 +1,9 @@
+Scenario: T-02d title 160 символів (201, межа проходить)
+Request:  POST http://localhost:5080/api/incidents
+Request body length: 296
+Status:   201
+Content-Type: application/json
+Location: /api/incidents/1d27234b-0a15-4c1b-a51c-417669f61adb
+Time (UTC): 2026-10-06T07:19:45.8588147Z
+
+{"id":"1d27234b-0a15-4c1b-a51c-417669f61adb","title":"yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy","description":"Опис для перевірки межі title 160.","severity":"Low","status":"New","occurredAtUtc":"2026-09-27T12:00:00+00:00","createdAtUtc":"2026-10-06T07:19:45.8440757+00:00"}

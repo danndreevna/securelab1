@@ -1,0 +1,9 @@
+﻿HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Date: Tue, 06 Oct 2026 07:34:57 GMT
+Server: Kestrel
+Transfer-Encoding: chunked
+X-Content-Type-Options: nosniff
+Referrer-Policy: no-referrer
+
+[{"id":"20000000-0000-0000-0000-000000000001","title":"Підозрілий лист із вкладенням","description":"Одержано лист нібито від деканату. Вкладення не відкривалося.","severity":"Medium","status":"Triaged","createdAtUtc":"2026-08-01T09:00:00+00:00"},{"id":"20000000-0000-0000-0000-000000000002","title":"Невідома спроба входу","description":"Система зафіксувала вхід до облікового запису з нового пристрою.","severity":"High","status":"InProgress","createdAtUtc":"2026-08-02T14:20:00+00:00"},{"id":"20000000-0000-0000-0000-000000000003","title":"Перевірка журналу комп'ютерного класу","description":"Текст <script> має відображатися як текст, а не виконуватися як HTML.","severity":"Low","status":"New","createdAtUtc":"2026-08-03T08:00:00+00:00"},{"id":"20000000-0000-0000-0000-000000000004","title":"O'Brien classroom report","description":"Навчальний запис для перевірки пошуку без реальних персональних даних.","severity":"Low","status":"New","createdAtUtc":"2026-08-03T09:00:00+00:00"},{"id":"20000000-0000-0000-0000-000000000005","title":"Перевірка USB навчальної мережі","description":"Навчальний запис для перевірки пошуку без реальних персональних даних.","severity":"Low","status":"New","createdAtUtc":"2026-08-03T09:00:00+00:00"}]

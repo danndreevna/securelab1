@@ -1,0 +1,9 @@
+Scenario: T-02e порожній description (400, ключ description)
+Request:  POST http://localhost:5080/api/incidents
+Request body length: 122
+Status:   400
+Content-Type: application/problem+json
+Location: 
+Time (UTC): 2026-10-06T07:19:45.8642633Z
+
+{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"Validation failed","status":400,"errors":{"description":["Поле description є обов'язковим."]},"traceId":"00-5210d48f92140a017a1ed6887195602d-6577ecb6ba8c9509-00"}

@@ -1,0 +1,9 @@
+Scenario: T-06 ресурс не знайдено (404, application/problem+json)
+Request:  GET http://localhost:5080/api/incidents/99999999-9999-9999-9999-999999999999
+Request body length: 0
+Status:   404
+Content-Type: application/problem+json
+Location: 
+Time (UTC): 2026-10-06T07:19:46.1932572Z
+
+{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.5","title":"Інцидент не знайдено","status":404,"detail":"Інцидент '99999999-9999-9999-9999-999999999999' не існує.","traceId":"00-6aa311a9b6ff82ac5a23a72ac645367e-5b097b2f5dc0fabd-00"}

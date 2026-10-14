@@ -1,0 +1,9 @@
+Scenario: T-02b title з пробілів (400, ключ title)
+Request:  POST http://localhost:5080/api/incidents
+Request body length: 141
+Status:   400
+Content-Type: application/problem+json
+Location: 
+Time (UTC): 2026-10-06T07:19:45.8332871Z
+
+{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"Validation failed","status":400,"errors":{"title":["Поле title є обов'язковим."]},"traceId":"00-c10cfebfd3c69f20beb9c6a12c27d55c-ddbe553fcca5dc5d-00"}

@@ -1,0 +1,10 @@
+﻿HTTP/1.1 500 Internal Server Error
+Content-Type: application/problem+json
+Date: Tue, 06 Oct 2026 07:34:57 GMT
+Server: Kestrel
+Cache-Control: no-cache,no-store
+Expires: -1
+Pragma: no-cache
+Transfer-Encoding: chunked
+
+{"type":"https://tools.ietf.org/html/rfc9110#section-15.6.1","title":"An error occurred while processing your request.","status":500,"traceId":"00-f3aef6e0f1fa4d454e4a303f04d04bb5-f65b220f82bf19cd-00"}

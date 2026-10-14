@@ -1,0 +1,9 @@
+Scenario: T-02c title 161 символ (400, ключ title)
+Request:  POST http://localhost:5080/api/incidents
+Request body length: 296
+Status:   400
+Content-Type: application/problem+json
+Location: 
+Time (UTC): 2026-10-06T07:19:45.8402897Z
+
+{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"Validation failed","status":400,"errors":{"title":["Довжина title не може перевищувати 160 символів."]},"traceId":"00-4c487b8a0ad1758459433aa175f2ea80-c1374ac2e35ece67-00"}

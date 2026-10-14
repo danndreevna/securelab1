@@ -1,0 +1,9 @@
+Scenario: T-01 коректне створення (очікується 201)
+Request:  POST http://localhost:5080/api/incidents
+Request body length: 162
+Status:   201
+Content-Type: application/json
+Location: /api/incidents/77b51ce1-5eb2-41d4-aa88-bd811a09b45c
+Time (UTC): 2026-10-06T07:19:45.7705065Z
+
+{"id":"77b51ce1-5eb2-41d4-aa88-bd811a09b45c","title":"Valid incident one","description":"Коректний опис тестового інциденту.","severity":"Medium","status":"New","occurredAtUtc":"2026-09-27T12:00:00+00:00","createdAtUtc":"2026-10-06T07:19:45.4455461+00:00"}

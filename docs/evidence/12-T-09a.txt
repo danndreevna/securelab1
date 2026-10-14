@@ -1,0 +1,9 @@
+Scenario: T-09a High, description 39 символів (400, ключ description)
+Request:  POST http://localhost:5080/api/incidents
+Request body length: 156
+Status:   400
+Content-Type: application/problem+json
+Location: 
+Time (UTC): 2026-10-06T07:19:45.9292543Z
+
+{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"Validation failed","status":400,"errors":{"description":["Для рівнів High та Critical опис після Trim() має містити щонайменше 40 символів."]},"traceId":"00-d9c6f6f4065f35e458020732e68fc85f-83562802a0b6cead-00"}

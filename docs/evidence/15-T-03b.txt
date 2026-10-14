@@ -1,0 +1,9 @@
+Scenario: T-03b інший регістр title (201: Alert і alert різні)
+Request:  POST http://localhost:5080/api/incidents
+Request body length: 153
+Status:   201
+Content-Type: application/json
+Location: /api/incidents/a0db7de2-94b9-4266-b56a-b7003bf117bb
+Time (UTC): 2026-10-06T07:19:45.9774164Z
+
+{"id":"a0db7de2-94b9-4266-b56a-b7003bf117bb","title":"cross field 40","description":"Той самий title в іншому регістрі.","severity":"Medium","status":"New","occurredAtUtc":"2026-09-27T12:00:00+00:00","createdAtUtc":"2026-10-06T07:19:45.9594602+00:00"}

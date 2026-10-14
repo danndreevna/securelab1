@@ -1,0 +1,12 @@
+Scenario: Overposting: id, status, ownerUserId ігноруються (201, status New)
+Request:  POST http://localhost:5080/api/incidents
+Request body length: 290
+Status:   201
+Content-Type: application/json
+Location: /api/incidents/12f8a89d-2b7b-4fc4-b0c5-9d16b99ce7b8
+Time (UTC): 2026-10-06T07:19:46.1726380Z
+
+{"id":"12f8a89d-2b7b-4fc4-b0c5-9d16b99ce7b8","title":"Overposting probe","description":"Спроба передати системні поля у тілі запиту.","severity":"Low","status":"New","occurredAtUtc":"2026-09-27T12:00:00+00:00","createdAtUtc":"2026-10-06T07:19:45.9823911+00:00"}
+
+--- GET /api/incidents/12f8a89d-2b7b-4fc4-b0c5-9d16b99ce7b8 ---
+{"id":"12f8a89d-2b7b-4fc4-b0c5-9d16b99ce7b8","title":"Overposting probe","description":"Спроба передати системні поля у тілі запиту.","severity":"Low","status":"New","occurredAtUtc":"2026-09-27T12:00:00+00:00","createdAtUtc":"2026-10-06T07:19:45.982391+00:00","ownerDisplayName":"Аліса Коваль","comments":[]}
