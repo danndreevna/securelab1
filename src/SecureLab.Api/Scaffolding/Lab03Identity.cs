@@ -1,5 +1,7 @@
 using System.Security.Claims;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using SecureLab.Api.Data;
 using SecureLab.Api.Data.Entities;
 
@@ -32,11 +34,32 @@ public static class Lab03Identity
                 return Task.CompletedTask;
             };
         });
+
+        // Rate limiting на логін: партиціонування за IP-адресою клієнта, а не за іменем
+        // користувача, щоб сам факт обмеження не видавав, існує акаунт чи ні.
+        // 5 спроб на 15 секунд з одного IP — для лабораторної демонстрації відновлення вікна;
+        // для production доцільне довше вікно (наприклад, 1 хвилина).
+        builder.Services.AddRateLimiter(options =>
+        {
+            options.AddPolicy("login", httpContext => RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                               factory: _ => new FixedWindowRateLimiterOptions
+                               {
+                                   PermitLimit = 10,
+                                   Window = TimeSpan.FromSeconds(10),
+                                   QueueLimit = 0
+                               }));
+            options.OnRejected = (context, _) =>
+            {
+                context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                return ValueTask.CompletedTask;
+            };
+        });
     }
 
     public static void MapLab03Identity(this WebApplication app)
     {
-        app.MapPost("/api/auth/register", async (RegistrationInput input, UserManager<ApplicationUser> users) =>
+        app.MapPost("/api/auth/register", async (RegistrationInput input, UserManager<ApplicationUser> users, ILogger<Program> logger) =>
         {
             const int maxUserNameLength = 256;
             const int maxEmailLength = 256;
@@ -60,6 +83,8 @@ public static class Lab03Identity
             var result = await users.CreateAsync(user, input.Password);
             if (!result.Succeeded)
             {
+                logger.LogWarning("Registration failed for user {UserName}: {ErrorCodes}",
+                    input.UserName, string.Join(",", result.Errors.Select(e => e.Code)));
                 var isDuplicate = result.Errors.Any(e => e.Code is "DuplicateUserName" or "DuplicateEmail");
                 return isDuplicate
                     ? Results.Conflict(new { message = "Registration failed" })
@@ -67,18 +92,30 @@ public static class Lab03Identity
             }
             var role = await users.AddToRoleAsync(user, DbSeeder.ReporterRole);
             if (!role.Succeeded) throw new InvalidOperationException("Default role assignment failed.");
+            logger.LogInformation("Registration succeeded for user {UserName}", user.UserName);
             return Results.Created("/api/me", new RegistrationResponse(user.Id, user.UserName!, user.DisplayName));
         });
-        app.MapPost("/api/auth/login", async (LoginInput input, SignInManager<ApplicationUser> signIn) =>
+        app.MapPost("/api/auth/login", async (LoginInput input, SignInManager<ApplicationUser> signIn, ILogger<Program> logger) =>
         {
             if (string.IsNullOrWhiteSpace(input.UserName) || string.IsNullOrEmpty(input.Password))
+            {
+                logger.LogWarning("Login rejected: missing username or password");
                 return Results.Unauthorized();
+            }
             var result = await signIn.PasswordSignInAsync(input.UserName, input.Password, false, false);
-            return result.Succeeded ? Results.NoContent() : Results.Unauthorized();
-        });
-        app.MapPost("/api/auth/logout", async (SignInManager<ApplicationUser> signIn) =>
+            if (result.Succeeded)
+            {
+                logger.LogInformation("Login succeeded for user {UserName}", input.UserName);
+                return Results.NoContent();
+            }
+            logger.LogWarning("Login failed for user {UserName}", input.UserName);
+            return Results.Unauthorized();
+        }).RequireRateLimiting("login");
+        app.MapPost("/api/auth/logout", async (HttpContext context, SignInManager<ApplicationUser> signIn, ILogger<Program> logger) =>
         {
+            var userName = context.User.Identity?.Name;
             await signIn.SignOutAsync();
+            logger.LogInformation("Logout for user {UserName}", userName);
             return Results.NoContent();
         });
         app.MapGet("/api/me", async (HttpContext context, UserManager<ApplicationUser> users) =>
