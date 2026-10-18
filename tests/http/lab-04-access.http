@@ -1,0 +1,62 @@
+# Lab 4 access scenarios, SecureLab baseline 2-A.
+# Run top to bottom with a client that keeps cookies (alice first, then morgan).
+# The password is NOT stored in Git: set @password locally, never commit it.
+@host = http://localhost:5080
+@password = SET_LOCALLY_DO_NOT_COMMIT
+
+### A-01 anonymous: protected details -> 401, not an HTML redirect
+GET {{host}}/api/incidents/20000000-0000-0000-0000-000000000002
+
+### Login alice (Reporter)
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "userName": "alice", "password": "{{password}}" }
+
+### A-02 alice reads own incident -> 200
+GET {{host}}/api/incidents/20000000-0000-0000-0000-000000000001
+
+### A-03 alice reads Bob incident -> 403, no Bob data
+GET {{host}}/api/incidents/20000000-0000-0000-0000-000000000002
+
+### A-04 alice updates Bob incident -> 403, state unchanged
+PUT {{host}}/api/incidents/20000000-0000-0000-0000-000000000002
+Content-Type: application/json
+
+{ "title": "hijacked", "description": "should be denied", "severity": "Low", "occurredAtUtc": "2026-08-02T14:10:00Z" }
+
+### A-04 alice deletes Bob incident -> 403, still exists
+DELETE {{host}}/api/incidents/20000000-0000-0000-0000-000000000002
+
+### A-05 alice list -> only her incidents (001, 003, 005)
+GET {{host}}/api/incidents
+
+### A-06 alice (Reporter) triage -> 403 and audit event authorization.denied
+POST {{host}}/api/incidents/20000000-0000-0000-0000-000000000003/triage
+
+### A-11 alice search -> no Bob incident 004
+GET {{host}}/api/incidents/search?q=Brien
+
+### A-11 alice severity-summary -> only her counts
+GET {{host}}/api/incidents/severity-summary
+
+### A-12 alice reads comment under Bob incident -> 403
+GET {{host}}/api/incident-comments/30000000-0000-0000-0000-000000000002
+
+### A-12 alice reads internal comment on own incident -> 403
+GET {{host}}/api/incident-comments/30000000-0000-0000-0000-000000000003
+
+### Logout alice
+POST {{host}}/api/auth/logout
+
+### Login morgan (Analyst)
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "userName": "morgan", "password": "{{password}}" }
+
+### A-03R morgan reads Alice incident -> 200
+GET {{host}}/api/incidents/20000000-0000-0000-0000-000000000001
+
+### A-12 morgan reads internal comment -> 200
+GET {{host}}/api/incident-comments/30000000-0000-0000-0000-000000000003

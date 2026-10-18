@@ -1,3 +1,4 @@
+using SecureLab.Api.Application.Incidents;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using SecureLab.Api.Data;
@@ -10,8 +11,13 @@ public static class Lab02Endpoints
 {
     public static void MapLab02Endpoints(this WebApplication app)
     {
-        app.MapGet("/api/incidents/search", async (string? q, string? sortBy, SecureLabDbContext db, CancellationToken ct) =>
+        app.MapGet("/api/incidents/search", async (string? q, string? sortBy, HttpContext httpContext, SecureLabDbContext db, CancellationToken ct) =>
         {
+            if (IncidentViewer.From(httpContext.User) is not { } viewer)
+            {
+                return Results.Unauthorized();
+            }
+
             // Allowlist для sortBy: будь-яке значення поза списком — 400, а не підстановка в ORDER BY.
             string[] allowedSortBy = ["createdAtUtc", "severity", "status"];
             if (!string.IsNullOrEmpty(sortBy) && !allowedSortBy.Contains(sortBy))
@@ -29,7 +35,8 @@ public static class Lab02Endpoints
             var escapedQ = safeQ.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
             var pattern = $"%{escapedQ}%";
 
-            var query = db.Incidents.AsNoTracking().Where(i =>
+            // Scoping до пошуку, OrderBy і Take(50): чужі інциденти не потрапляють навіть у вибірку.
+            var query = db.Incidents.AsNoTracking().VisibleTo(viewer).Where(i =>
                 EF.Functions.ILike(i.Title, pattern, "\\") ||
                 EF.Functions.ILike(i.Description, pattern, "\\"));
 
@@ -51,7 +58,7 @@ public static class Lab02Endpoints
                 Status = row.Status.ToString(),
                 row.CreatedAtUtc
             }));
-        });
+        }).RequireAuthorization();
 
         app.MapPost("/api/incidents", async (CreateIncidentRequest request, HttpContext httpContext, SecureLabDbContext db, CancellationToken ct) =>
         {

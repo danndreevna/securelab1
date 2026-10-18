@@ -6,16 +6,14 @@ using SecureLab.Api.Presentation.Contracts;
 
 namespace SecureLab.Api.Tests;
 
-public sealed class IncidentEndpointTests(SecureLabApiFactory factory)
-    : IClassFixture<SecureLabApiFactory>
+public sealed class IncidentEndpointTests(AccessFixture fx) : IClassFixture<AccessFixture>
 {
-    private readonly HttpClient _client = factory.CreateClient();
-
     [Fact]
-    public async Task GetList_ReturnsSeededIncidents()
+    public async Task GetList_AsAnalyst_ReturnsSeededIncidents()
     {
-        var incidents = await _client.GetFromJsonAsync<List<IncidentListItemResponse>>(
-            "/api/incidents");
+        var morgan = await fx.Morgan;
+
+        var incidents = await morgan.GetFromJsonAsync<List<IncidentListItemResponse>>("/api/incidents");
 
         Assert.NotNull(incidents);
         Assert.Contains(incidents, incident => incident.Id == DbSeeder.AliceIncidentId);
@@ -25,7 +23,9 @@ public sealed class IncidentEndpointTests(SecureLabApiFactory factory)
     [Fact]
     public async Task GetDetails_ForUnknownId_ReturnsProblemDetails404()
     {
-        using var response = await _client.GetAsync($"/api/incidents/{Guid.NewGuid()}");
+        var alice = await fx.Alice;
+
+        using var response = await alice.GetAsync($"/api/incidents/{Guid.NewGuid()}");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
@@ -34,21 +34,27 @@ public sealed class IncidentEndpointTests(SecureLabApiFactory factory)
     [Fact]
     public async Task GetDetails_DoesNotExposeInternalOwnerFields()
     {
-        using var response = await _client.GetAsync(
-            $"/api/incidents/{DbSeeder.AliceIncidentId}");
+        var alice = await fx.Alice;
+        var me = await alice.GetFromJsonAsync<JsonElement>("/api/me");
+
+        using var response = await alice.GetAsync($"/api/incidents/{DbSeeder.AliceIncidentId}");
         var json = await response.Content.ReadAsStringAsync();
         using var document = JsonDocument.Parse(json);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.False(document.RootElement.TryGetProperty("ownerUserId", out _));
         Assert.False(document.RootElement.TryGetProperty("email", out _));
-        Assert.Equal("Аліса Коваль", document.RootElement.GetProperty("ownerDisplayName").GetString());
+        Assert.Equal(
+            me.GetProperty("displayName").GetString(),
+            document.RootElement.GetProperty("ownerDisplayName").GetString());
     }
 
     [Fact]
     public async Task ClientScript_DoesNotUseDangerousInnerHtmlSink()
     {
-        var script = await _client.GetStringAsync("/app.js");
+        var anonymous = await fx.Anonymous;
+
+        var script = await anonymous.GetStringAsync("/app.js");
 
         Assert.DoesNotContain("innerHTML", script, StringComparison.Ordinal);
         Assert.Contains("textContent", script, StringComparison.Ordinal);
